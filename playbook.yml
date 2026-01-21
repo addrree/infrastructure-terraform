@@ -73,6 +73,8 @@
 
     - name: Extract tgz into release dir as app/
       become_user: ubuntu
+      args:
+        executable: /bin/bash
       shell: |
         set -euo pipefail
         cd "{{ releases_dir }}/{{ release_id }}"
@@ -95,6 +97,8 @@
 
     - name: Install wheel into venv
       become_user: ubuntu
+      args:
+        executable: /bin/bash
       shell: |
         set -euo pipefail
         . "{{ venv_dir }}/bin/activate"
