@@ -1,10 +1,8 @@
 - name: Deploy restoringvalues to VM
-  hosts: app
+  hosts: all
   become: true
 
   vars:
-    app_tgz_path: ""
-    release_id: "1"
     app_root: /opt/restoringvalues
     releases_dir: "{{ app_root }}/releases"
     current_dir: "{{ app_root }}/current"
@@ -12,7 +10,10 @@
     run_dir: "{{ app_root }}/run"
     bin_dir: "{{ app_root }}/bin"
     service_name: restoringvalues
-    wheel_path: ""  # Jenkins передаст --extra-vars "wheel_path=..."
+
+    wheel_path: ""     # Jenkins передаст
+    app_tgz_path: ""   # Jenkins передаст
+    release_id: "1"    # Jenkins передаст BUILD_NUMBER
 
   tasks:
     - name: Check wheel_path provided
@@ -31,6 +32,7 @@
         name:
           - python3-venv
           - psmisc
+          - tar
         state: present
 
     - name: Create base dirs
@@ -45,8 +47,6 @@
         - "{{ bin_dir }}"
         - "{{ run_dir }}"
 
-    # В этом минимальном варианте кладём "релиз" в releases/1 всегда.
-    # Если хочешь как в Jenkins build number — можно передавать release_id.
     - name: Create release dir
       file:
         path: "{{ releases_dir }}/{{ release_id }}"
@@ -63,21 +63,23 @@
         group: ubuntu
         mode: "0644"
 
-    - name: Upload app tgz into release dir
+    - name: Upload tgz into release dir
       copy:
         src: "{{ app_tgz_path }}"
         dest: "{{ releases_dir }}/{{ release_id }}/app-restoringvalues.tgz"
         owner: ubuntu
         group: ubuntu
         mode: "0644"
-    - name: Extract app tgz
+
+    - name: Extract tgz into release dir as app/
       become_user: ubuntu
       shell: |
         set -euo pipefail
         cd "{{ releases_dir }}/{{ release_id }}"
         rm -rf app
         mkdir -p app
-        tar -xzf app-restoringvalues.tgz -C app --strip-components=1    
+        tar -xzf app-restoringvalues.tgz -C app
+
     - name: Point current -> release
       file:
         src: "{{ releases_dir }}/{{ release_id }}"
@@ -110,9 +112,10 @@
         content: |
           #!/usr/bin/env bash
           set -euo pipefail
-          cd "{{ current_dir }}"
 
-          # чистим порты
+          # всегда из app
+          cd "{{ current_dir }}/app"
+
           for p in 8092 8093 8094 8095; do
             fuser -k ${p}/tcp >/dev/null 2>&1 || true
           done
@@ -124,12 +127,6 @@
             local name="$1"; shift
             setsid nohup "{{ venv_dir }}/bin/python" "$@" > "{{ run_dir }}/${name}.log" 2>&1 & echo $! > "{{ run_dir }}/${name}.pid"
           }
-
-          # ВАЖНО: пути должны реально существовать в /opt/restoringvalues/current
-          # Если у тебя внутри current/app/..., тогда поменяй на app/Simulator/...
-          if [ -d "{{ current_dir }}/app" ]; then
-            cd "{{ current_dir }}/app"
-          fi
 
           start_bg simulator Simulator/simulator.py
           sleep 1
@@ -176,7 +173,7 @@
           [Service]
           Type=simple
           User=ubuntu
-          WorkingDirectory={{ current_dir }}
+          WorkingDirectory={{ current_dir }}/app
           ExecStart={{ bin_dir }}/start.sh
           ExecStop={{ bin_dir }}/stop.sh
           Restart=always
