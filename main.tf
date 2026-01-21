@@ -13,12 +13,36 @@ provider "openstack" {
   # Креды берутся из OS_* переменных (openrc), Jenkins их подаст через source openrc.sh
 }
 
-variable "vm_name"        { type = string  default = "Terraform_andrey" }
-variable "image_name"     { type = string  default = "Ununtu 22.04" }
-variable "flavor_name"    { type = string  default = "m1.small" }
-variable "network_name"   { type = string  default = "sutdents-net" }
-variable "keypair_name"   { type = string  default = "AndreyIL" }
-variable "secgroup_name"  { type = string  default = "students-general" }
+variable "vm_name" {
+  type    = string
+  default = "Terraform_andrey"
+}
+
+variable "image_name" {
+  type    = string
+  default = "Ununtu 22.04"
+}
+
+variable "flavor_name" {
+  type    = string
+  default = "m1.small"
+}
+
+variable "network_name" {
+  type    = string
+  default = "sutdents-net"
+}
+
+variable "keypair_name" {
+  type    = string
+  default = "AndreyIL"
+}
+
+variable "secgroup_name" {
+  type    = string
+  default = "students-general"
+}
+
 
 # Можно оставить только 22, а порты приложения открывать не обязательно,
 # если не требуют доступ снаружи. Но часто проверяют, что сервис слушает.
