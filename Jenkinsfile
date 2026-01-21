@@ -53,9 +53,16 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           set -euo pipefail
+
+          # 1) Подать OpenStack креды (без этого provider пустой)
+          . /home/ubuntu/openrc-jenkins.sh
+
+          # 2) Быстрый smoke-check что токен реально получается
+          openstack token issue >/dev/null
+
           terraform -version
 
-          # если terraform.rc лежит в репо — используем (зеркала провайдеров)
+          # 3) зеркала провайдеров
           if [ -f terraform.rc ]; then
             export TF_CLI_CONFIG_FILE="$PWD/terraform.rc"
             echo "Using existing terraform.rc from repo"
@@ -71,6 +78,9 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           set -euo pipefail
+
+          . /home/ubuntu/openrc-jenkins.sh
+          openstack token issue >/dev/null
 
           terraform apply -auto-approve
 
@@ -122,8 +132,6 @@ pipeline {
               sleep 2
             done
 
-            ansible --version
-
             ansible-playbook -i "${VM_IP}," playbook.yml \
               --user "${SSH_USER}" --private-key "$SSH_KEY_FILE" \
               --ssh-common-args "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
@@ -138,6 +146,9 @@ pipeline {
       steps {
         sh '''#!/usr/bin/env bash
           set -euo pipefail
+
+          . /home/ubuntu/openrc-jenkins.sh
+          openstack token issue >/dev/null
 
           if [ -f terraform.rc ]; then
             export TF_CLI_CONFIG_FILE="$PWD/terraform.rc"
