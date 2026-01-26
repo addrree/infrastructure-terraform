@@ -8,8 +8,8 @@ pipeline {
   }
 
   parameters {
-    string(name: 'BUILD_JOB', defaultValue: 'AndreyIL/AndreyLAb2', description: 'L2 job that produces dist/*.whl and app-restoringvalues.tgz')
-    string(name: 'SSH_CRED_ID', defaultValue: 'Andrey-heatvm', description: 'Jenkins credential: SSH username with private key to access VM')
+    string(name: 'BUILD_JOB', defaultValue: 'KoganSK/KoganSK_pipeline', description: 'L2 job that produces dist/*.whl and app-restoringvalues.tgz')
+    string(name: 'SSH_CRED_ID', defaultValue: 'ssh_kogan_heat', description: 'Jenkins credential: SSH username with private key to access VM')
     choice(name: 'TF_ACTION', choices: ['apply', 'destroy'], description: 'Terraform action')
   }
 
@@ -51,7 +51,7 @@ pipeline {
 
     stage('Terraform init') {
       steps {
-        sh '''#!/usr/bin/env bash
+        sh '''#!/usr/bi/env bash
           set -euo pipefail
 
           # 1) Подать OpenStack креды (без этого provider пустой)

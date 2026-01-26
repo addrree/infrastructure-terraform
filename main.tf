@@ -10,12 +10,12 @@ terraform {
 }
 
 provider "openstack" {
-  # Креды берутся из OS_* переменных (openrc), Jenkins их подаст через source openrc.sh
+
 }
 
 variable "vm_name" {
   type    = string
-  default = "Terraform_andrey"
+  default = "Terraform_Kogan"
 }
 
 variable "image_name" {
@@ -35,7 +35,7 @@ variable "network_name" {
 
 variable "keypair_name" {
   type    = string
-  default = "AndreyIL"
+  default = "KoganSK2"
 }
 
 variable "secgroup_name" {
