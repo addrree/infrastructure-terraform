@@ -51,7 +51,7 @@ pipeline {
 
     stage('Terraform init') {
       steps {
-        sh '''#!/usr/bi/env bash
+        sh '''#!/usr/bin/env bash
           set -euo pipefail
 
           # 1) Подать OpenStack креды (без этого provider пустой)
